@@ -62,11 +62,30 @@ ROWS="$(curl -sf --max-time 8 -X POST \
   --data '{"action":"list"}' \
   "$REGISTRY_URL/functions/v1/vibe-registry")" || exit 0
 
+# 本資料夾（或其上層）是否已綁定某個登記專案（add/join 成功時由 registry.sh 記錄）
+BOUND_NOTE=""
+DIRMAP="$HOME/.claude/vibe-registry-dirs"
+if [ -f "$DIRMAP" ]; then
+  best=""
+  while IFS=$'\t' read -r p bid btitle; do
+    [ -n "$p" ] || continue
+    case "$PWD" in
+      "$p" | "$p"/*)
+        if [ "${#p}" -gt "${#best}" ]; then
+          best="$p"
+          BOUND_NOTE="◆ 本資料夾已綁定登記專案：${btitle}（id: ${bid}）——進度更新/收尾直接用這個 id，不用查找；查重時注意這是使用者自己的專案。"
+        fi ;;
+    esac
+  done < "$DIRMAP"
+fi
+
 cat <<EOF
 <vibe-registry>
 以下是公司 vibe coding 專案登記表的進行中項目（CSV，最近更新在前）：
 
 $ROWS
+
+$BOUND_NOTE
 
 登記表使用規則（對 Claude 的指示）：
 1. 使用者要開始開發新東西時查重：先跑 bash "$DIR/registry.sh" list --all 取即時全表（含已完成——有人做完的東西可直接沿用，是最該攔下的重工；上表只是開場的進行中快照）再比對；命中時主動告知使用者（誰、在做什麼/做完了什麼、最後更新時間），請使用者決定沿用、加入（join）或繼續新開。

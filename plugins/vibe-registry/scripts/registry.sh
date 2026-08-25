@@ -32,6 +32,16 @@ fi
 
 FN="$REGISTRY_URL/functions/v1/vibe-registry"
 
+# 資料夾 ↔ 專案對照表（TSV: 路徑<TAB>id<TAB>名稱）。add/join 成功時記錄目前
+# 工作目錄，之後 hook 開場即可注入「本資料夾屬於專案 X」，update 不用再找 id。
+DIRMAP="$HOME/.claude/vibe-registry-dirs"
+record_dir() { # $1=id $2=title
+  [ -n "$1" ] || return 0
+  { grep -v "^$PWD	" "$DIRMAP" 2>/dev/null || true; } > "$DIRMAP.tmp"
+  printf '%s\t%s\t%s\n' "$PWD" "$1" "$2" >> "$DIRMAP.tmp"
+  mv "$DIRMAP.tmp" "$DIRMAP"
+}
+
 # 身份優先序：設定檔 email > 本機 git 設定 > 系統帳號 fallback
 owner_email() {
   if [ -n "${OWNER_EMAIL:-}" ]; then
@@ -73,11 +83,15 @@ case "$cmd" in
   add)
     title="${2:?用法: registry.sh add \"專案名稱\" \"一句話描述\"}"
     desc="${3:-}"
-    call "{\"action\":\"add\",\"title\":\"$(json_escape "$title")\",\"description\":\"$(json_escape "$desc")\",\"owner\":\"$(json_escape "$(owner_email)")\"}"
+    resp="$(call "{\"action\":\"add\",\"title\":\"$(json_escape "$title")\",\"description\":\"$(json_escape "$desc")\",\"owner\":\"$(json_escape "$(owner_email)")\"}")"
+    printf '%s\n' "$resp"
+    record_dir "$(printf '%s' "$resp" | sed -n 's/.*id: \([0-9a-f-]*\)).*/\1/p')" "$title"
     ;;
   join)
     id="${2:?用法: registry.sh join <id>}"
-    call "{\"action\":\"join\",\"id\":\"$(json_escape "$id")\",\"me\":\"$(json_escape "$(owner_email)")\"}"
+    resp="$(call "{\"action\":\"join\",\"id\":\"$(json_escape "$id")\",\"me\":\"$(json_escape "$(owner_email)")\"}")"
+    printf '%s\n' "$resp"
+    case "$resp" in 已加入專案*) record_dir "$id" "$(printf '%s' "$resp" | sed -n 's/.*「\(.*\)」.*/\1/p')";; esac
     ;;
   update)
     id="${2:?用法: registry.sh update <id> \"進度摘要\"}"
