@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 # vibe-registry 一鍵安裝腳本：裝 plugin + 當場完成設定
-# 用法（貼到終端機執行）：
-#   bash <(curl -fsSL https://raw.githubusercontent.com/capsule-taiwan/capsule-vibe-registry/master/install.sh)
+# 用法（貼到終端機執行；token 可作為第一個參數直接帶入，email 可作為第二個參數）：
+#   bash <(curl -fsSL https://raw.githubusercontent.com/capsule-taiwan/capsule-vibe-registry/master/install.sh) <token> [email]
+# 不帶參數則互動式詢問。
 set -euo pipefail
 
 REPO="capsule-taiwan/capsule-vibe-registry"
 REGISTRY_URL="https://rgdhqguwspcnpmuyrytp.supabase.co"
 CONF="$HOME/.claude/vibe-registry.env"
+
+TOKEN_ARG="${1:-}"
+EMAIL_ARG="${2:-}"
 
 if ! command -v claude >/dev/null 2>&1; then
   echo "找不到 claude 指令。請先安裝 Claude Code：https://claude.com/claude-code" >&2
@@ -19,22 +23,29 @@ claude plugin marketplace add "$REPO" 2>/dev/null || claude plugin marketplace u
 echo "==> 安裝 vibe-registry plugin..."
 claude plugin install vibe-registry@capsule-vibe
 
-# ── 當場完成設定（省掉「重開 session 再讓 Claude 引導」的斷點）──
-if [ -f "$CONF" ] && grep -q 'REGISTRY_TOKEN=".' "$CONF"; then
-  echo "==> 已有設定（${CONF}），保留不動。要重設：刪除該檔後重跑本腳本。"
-elif [ -r /dev/tty ]; then
-  echo ""
-  echo "==> 最後兩個問題（資料在 Slack #vibe-coding 頻道的置頂訊息裡）："
-  TOKEN=""
+# ── 設定：參數 > 既有設定 > 互動詢問 ──
+TOKEN="$TOKEN_ARG"
+EMAIL="$EMAIL_ARG"
+if [ -f "$CONF" ]; then
+  # shellcheck source=/dev/null
+  source "$CONF" 2>/dev/null || true
+  [ -n "$TOKEN" ] || TOKEN="${REGISTRY_TOKEN:-}"
+  [ -n "$EMAIL" ] || EMAIL="${OWNER_EMAIL:-}"
+fi
+if [ -r /dev/tty ]; then
   while [ -z "$TOKEN" ]; do
-    printf "  1) 貼上登記表 token: "
+    printf "請貼上登記表 token（Slack #vibe-coding 置頂訊息裡有）: "
     read -r TOKEN < /dev/tty
   done
-  EMAIL=""
   while ! printf '%s' "$EMAIL" | grep -q "@"; do
-    printf "  2) 你的公司 email（例 amy.chen@capsulecorporation.cc）: "
+    printf "請輸入你的公司 email（例 amy.chen@capsulecorporation.cc）: "
     read -r EMAIL < /dev/tty
   done
+fi
+
+if [ -z "$TOKEN" ]; then
+  echo "==> （沒有 token 也無法互動詢問：開新 Claude session 時 Claude 會引導完成設定）"
+else
   umask 077
   printf 'REGISTRY_TOKEN="%s"\nOWNER_EMAIL="%s"\n' "$TOKEN" "$EMAIL" > "$CONF"
   chmod 600 "$CONF"
@@ -45,10 +56,11 @@ elif [ -r /dev/tty ]; then
   if [ "$HTTP" = "200" ]; then
     echo " OK ✅"
   else
-    echo " 失敗（token 可能貼錯或離線）。稍後可刪除 $CONF 重跑本腳本，或開 Claude session 讓 Claude 引導。" >&2
+    echo " 失敗（token 可能貼錯或離線）。可重跑本腳本，或開 Claude session 讓 Claude 引導。" >&2
   fi
-else
-  echo "==> （非互動環境，略過設定：開新 session 時 Claude 會引導完成）"
+  if ! printf '%s' "$EMAIL" | grep -q "@"; then
+    echo "==> 提醒：尚未設定 email，之後開 Claude session 時告訴 Claude 你的公司信箱即可補上。"
+  fi
 fi
 
 cat <<'MSG'
