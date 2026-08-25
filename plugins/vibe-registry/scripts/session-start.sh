@@ -93,7 +93,7 @@ $BOUND_NOTE
    bash "$DIR/registry.sh" join <id>
 3. 確定是新專案（不是問問題、不是小修改）時，**先問使用者是否要登記**（說明內容全公司可見；可選籠統標題保留隱私；拒絕就尊重且本 session 不再提），同意後執行：
    bash "$DIR/registry.sh" add "專案名稱" "一句話描述"
-4. 本次 session 對某登記項目有實質進度時（發起人或成員皆可），收尾前更新：
+4. 對登記項目達成里程碑（完成功能/commit/部署/修完 bug）的**當下**就更新，別等收尾（session 結束時機你觀察不到，等收尾=永遠不會發生）：
    bash "$DIR/registry.sh" update <id> "進度摘要"
 5. 專案完成或暫停時：
    bash "$DIR/registry.sh" status <id> done|paused|active

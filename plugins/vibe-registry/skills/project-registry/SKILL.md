@@ -35,13 +35,13 @@ description: 公司 vibe coding 專案登記工作流。當使用者要開始開
 
 ## 何時更新（update）
 
-session 中對某個登記項目有**實質進度**（做出可用的東西、完成一個階段），在收尾時執行一次：
+在**里程碑達成的當下**就更新——完成一個功能、commit/push、部署、修完一個 bug：
 
 ```bash
 bash <路徑>/registry.sh update <id> "本次進度一句話"
 ```
 
-一個 session 更新一次就好，不要每個小步驟都打。若不知道 id，先 `registry.sh list` 用 title + owner 對出來。
+**不要等 session 收尾才更新**：session 的結束時機你觀察不到（使用者關掉視窗就沒了），「收尾再說」等於永遠不會發生。原則：小步驟不打、里程碑必打；同一 session 連續多個里程碑可以只在最新的那個更新。若不知道 id，優先看 hook 注入的「本資料夾已綁定專案」，沒有再 `registry.sh list` 用 title + owner 對出來。
 
 ## 何時收尾（status）
 
