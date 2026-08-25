@@ -95,9 +95,11 @@ $BOUND_NOTE
    bash "$DIR/registry.sh" add "專案名稱" "一句話描述"
 4. 對登記項目達成里程碑（完成功能/commit/部署/修完 bug）的**當下**就更新，別等收尾（session 結束時機你觀察不到，等收尾=永遠不會發生）：
    bash "$DIR/registry.sh" update <id> "進度摘要"
-5. 專案完成或暫停時：
+5. session 中看到部署成功的 URL、或使用者說「上線了」給了網址，當下記錄（查重命中已完成且有 url 的專案時，直接把網址給使用者沿用）：
+   bash "$DIR/registry.sh" link <id> "https://..."
+6. 專案完成或暫停時：
    bash "$DIR/registry.sh" status <id> done|paused|active
-6. 查看完整清單（含已完成）：bash "$DIR/registry.sh" list --all
+7. 查看完整清單（含已完成）：bash "$DIR/registry.sh" list --all
 詳細工作流見 project-registry skill。
 </vibe-registry>
 EOF

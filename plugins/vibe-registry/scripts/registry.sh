@@ -93,6 +93,11 @@ case "$cmd" in
     printf '%s\n' "$resp"
     case "$resp" in 已加入專案*) record_dir "$id" "$(printf '%s' "$resp" | sed -n 's/.*「\(.*\)」.*/\1/p')";; esac
     ;;
+  link)
+    id="${2:?用法: registry.sh link <id> <部署網址>}"
+    url="${3:?用法: registry.sh link <id> <部署網址>}"
+    call "{\"action\":\"link\",\"id\":\"$(json_escape "$id")\",\"url\":\"$(json_escape "$url")\"}"
+    ;;
   update)
     id="${2:?用法: registry.sh update <id> \"進度摘要\"}"
     note="${3:?用法: registry.sh update <id> \"進度摘要\"}"
@@ -110,6 +115,7 @@ case "$cmd" in
   registry.sh add "專案名稱" "一句話描述"    登記新專案（owner 自動取設定的 email）
   registry.sh join <id>                    加入既有專案成為成員
   registry.sh update <id> "進度摘要"        更新進度
+  registry.sh link <id> <部署網址>          記錄成品/部署網址
   registry.sh status <id> active|paused|done
 USAGE
     exit 1

@@ -18,7 +18,7 @@ const SLACK_BOT = Deno.env.get("SLACK_BOT_TOKEN") ?? "";
 const SLACK_CHANNEL = Deno.env.get("SLACK_CHANNEL") ?? "";
 const SLACK = Deno.env.get("SLACK_WEBHOOK_URL") ?? "";
 
-const COLS = "id,title,owner,members,status,description,latest_update,updated_at";
+const COLS = "id,title,owner,members,status,description,latest_update,url,updated_at";
 const STATUSES = ["active", "paused", "done"];
 
 async function slack(text: string) {
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     const { data, error } = await q;
     if (error) return text(error.message, 500);
     const rows = data.map((r) =>
-      [r.id, r.title, r.owner, r.members, r.status, r.description, r.latest_update, r.updated_at]
+      [r.id, r.title, r.owner, r.members, r.status, r.description, r.latest_update, r.url, r.updated_at]
         .map(csvCell).join(",")
     );
     return text([COLS, ...rows].join("\n"));
@@ -100,6 +100,16 @@ Deno.serve(async (req) => {
     if (e2) return text(e2.message, 500);
     await slack(`👥 ${me} 加入了專案:${row.title} (發起人 ${row.owner})`);
     return text(`已加入專案「${row.title}」(發起人:${row.owner})`);
+  }
+
+  if (action === "link") {
+    const id = String(body.id ?? "");
+    const url = String(body.url ?? "").trim();
+    if (!id || !/^https?:\/\/.+/.test(url)) return text("id 與 url (http/https) 必填", 400);
+    const { data, error } = await t().update({ url }).eq("id", id).select("title");
+    if (error) return text(error.message, 500);
+    if (!data.length) return text(`找不到 id=${id} 的專案`, 404);
+    return text(`已記錄專案網址:${data[0].title} → ${url}`);
   }
 
   if (action === "update") {

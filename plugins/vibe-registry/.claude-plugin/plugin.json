@@ -1,7 +1,7 @@
 {
   "name": "vibe-registry",
   "description": "每次開 session 自動載入公司進行中的 vibe coding 專案清單，開新工作前查重、自動登記、進度更新、Slack 通知",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "author": {
     "name": "Capsule IT",
     "email": "it-2@capsulecorporation.cc"

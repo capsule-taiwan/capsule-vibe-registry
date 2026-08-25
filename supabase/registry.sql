@@ -8,6 +8,7 @@ create table if not exists public.vibe_projects (
   description text,
   owner text not null,
   members text[] not null default '{}',
+  url text,
   status text not null default 'active'
     check (status in ('active', 'paused', 'done', 'stale')),
   latest_update text,
@@ -18,6 +19,10 @@ create table if not exists public.vibe_projects (
 -- 既有表補欄位（冪等；多人協作同一專案時的其他成員）
 alter table public.vibe_projects
   add column if not exists members text[] not null default '{}';
+
+-- 既有表補欄位（冪等；專案部署後的成品網址，供沿用）
+alter table public.vibe_projects
+  add column if not exists url text;
 
 -- updated_at 自動更新
 create or replace function public.vibe_projects_touch()

@@ -43,6 +43,16 @@ bash <路徑>/registry.sh update <id> "本次進度一句話"
 
 **不要等 session 收尾才更新**：session 的結束時機你觀察不到（使用者關掉視窗就沒了），「收尾再說」等於永遠不會發生。原則：小步驟不打、里程碑必打；同一 session 連續多個里程碑可以只在最新的那個更新。若不知道 id，優先看 hook 注入的「本資料夾已綁定專案」，沒有再 `registry.sh list` 用 title + owner 對出來。
 
+## 成品網址（link）
+
+session 中**看到部署成功的 URL**（vercel / netlify / GitHub Pages / 自架域名的部署輸出），或使用者說「上線了，網址是…」時，當下記錄：
+
+```bash
+bash <路徑>/registry.sh link <id> "https://..."
+```
+
+記完一句話告知即可。這是登記表價值最高的欄位——已完成的專案有網址，別人查重命中時才能直接沿用而不是重做。查重時若命中**已完成且有 url** 的專案，把網址直接給使用者。
+
 ## 何時收尾（status）
 
 - 使用者說做完了 / 上線了：`registry.sh status <id> done`
