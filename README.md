@@ -6,7 +6,7 @@
 
 **機制**：
 - 每次開 Claude Code session，SessionStart hook 自動抓中央登記表的進行中項目注入 context → **Claude 幫每個人查重**，開新工作時主動提醒「某某已在做類似的事 / 已經做完可沿用」
-- `project-registry` skill 讓 Claude 在使用者開新專案時自動登記、協作時 join、有進度時更新、完成時收尾
+- `project-registry` skill 讓 Claude 在使用者開新專案時**徵求同意後**登記（可選籠統標題保留隱私、可拒絕）、協作時 join、有進度時更新、完成時收尾
 - 登記 / 加入 / 完成時由伺服器端發 Slack 通知 → 管理者與全員在 Slack 就看得到動態
 - `/registry` 指令隨時看全表
 
