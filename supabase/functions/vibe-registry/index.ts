@@ -105,11 +105,12 @@ Deno.serve(async (req) => {
   if (action === "link") {
     const id = String(body.id ?? "");
     const url = String(body.url ?? "").trim();
-    if (!id || !/^https?:\/\/.+/.test(url)) return text("id 與 url (http/https) 必填", 400);
-    const { data, error } = await t().update({ url }).eq("id", id).select("title");
+    if (!id) return text("id 必填", 400);
+    if (url && !/^https?:\/\/.+/.test(url)) return text("url 必須是 http/https 開頭（傳空字串可清除）", 400);
+    const { data, error } = await t().update({ url: url || null }).eq("id", id).select("title");
     if (error) return text(error.message, 500);
     if (!data.length) return text(`找不到 id=${id} 的專案`, 404);
-    return text(`已記錄專案網址:${data[0].title} → ${url}`);
+    return text(url ? `已記錄專案網址:${data[0].title} → ${url}` : `已清除專案網址:${data[0].title}`);
   }
 
   if (action === "update") {

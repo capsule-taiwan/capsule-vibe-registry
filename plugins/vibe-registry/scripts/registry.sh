@@ -94,8 +94,9 @@ case "$cmd" in
     case "$resp" in 已加入專案*) record_dir "$id" "$(printf '%s' "$resp" | sed -n 's/.*「\(.*\)」.*/\1/p')";; esac
     ;;
   link)
-    id="${2:?用法: registry.sh link <id> <部署網址>}"
-    url="${3:?用法: registry.sh link <id> <部署網址>}"
+    id="${2:?用法: registry.sh link <id> <上線app網址|--clear>}"
+    url="${3:?用法: registry.sh link <id> <上線app網址|--clear>}"
+    [ "$url" = "--clear" ] && url=""
     call "{\"action\":\"link\",\"id\":\"$(json_escape "$id")\",\"url\":\"$(json_escape "$url")\"}"
     ;;
   update)
