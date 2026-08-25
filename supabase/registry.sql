@@ -37,15 +37,21 @@ create trigger trg_vibe_projects_touch
   before update on public.vibe_projects
   for each row execute function public.vibe_projects_touch();
 
--- RLS：啟用但「零政策」= anon / authenticated 完全不可直接碰這張表。
--- 唯一存取路徑是 Edge Function `vibe-registry`（service_role 繞過 RLS）。
+-- RLS：寫入零政策 = anon / authenticated 不可直接寫這張表。
+-- 寫入的唯一路徑是 Edge Function `vibe-registry`（service_role 繞過 RLS）。
 -- 發給使用者的 REGISTRY_TOKEN 只對函式有效，與資料庫憑證完全脫鉤——
 -- 本專案 DB 內還有其他資料，絕不能把 anon key 發出去。
+-- 讀取：已登入者（authenticated）可唯讀全表；anon 仍然完全不可見。
 alter table public.vibe_projects enable row level security;
 
 drop policy if exists vibe_projects_select on public.vibe_projects;
 drop policy if exists vibe_projects_insert on public.vibe_projects;
 drop policy if exists vibe_projects_update on public.vibe_projects;
+
+create policy vibe_projects_select
+  on public.vibe_projects for select
+  to authenticated
+  using (true);
 
 -- （選配）自動標記停滯：active 超過 14 天沒更新 → stale
 -- 需要先在 Dashboard > Database > Extensions 啟用 pg_cron，再執行：
