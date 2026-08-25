@@ -10,19 +10,35 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 const TOKEN = Deno.env.get("REGISTRY_TOKEN") ?? "";
+// Slack 通知（伺服器端 secrets，二擇一）：
+// 1. SLACK_BOT_TOKEN (xoxb-...) + SLACK_CHANNEL (channel ID, C 開頭) —— 與 CRM 同一個
+//    Slack app 的 bot 直打 chat.postMessage（CRM 的 token 在 EC2 /opt/casery/.env 的 SLACK_TOKEN）
+// 2. SLACK_WEBHOOK_URL —— incoming webhook 備援
+const SLACK_BOT = Deno.env.get("SLACK_BOT_TOKEN") ?? "";
+const SLACK_CHANNEL = Deno.env.get("SLACK_CHANNEL") ?? "";
 const SLACK = Deno.env.get("SLACK_WEBHOOK_URL") ?? "";
 
 const COLS = "id,title,owner,members,status,description,latest_update,updated_at";
 const STATUSES = ["active", "paused", "done"];
 
 async function slack(text: string) {
-  if (!SLACK) return;
   try {
-    await fetch(SLACK, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
+    if (SLACK_BOT && SLACK_CHANNEL) {
+      await fetch("https://slack.com/api/chat.postMessage", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Authorization": `Bearer ${SLACK_BOT}`,
+        },
+        body: JSON.stringify({ channel: SLACK_CHANNEL, text }),
+      });
+    } else if (SLACK) {
+      await fetch(SLACK, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+    }
   } catch (_) { /* 通知失敗不影響主流程 */ }
 }
 
