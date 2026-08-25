@@ -13,17 +13,6 @@ set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOME_CONFIG="$HOME/.claude/vibe-registry.env"
 
-# 只在「公司 Claude 帳號」的 session 運作：讀本機登入帳號 email，
-# 非 capsule 網域（例如個人帳號）靜默退出，不注入、不引導、完全不打擾。
-# 注意這是行為範圍控制，不是安全機制（安全靠 token）；讀不到 email 時放行，
-# 避免未來 Claude Code 改內部欄位名時整個功能無聲消失。
-claude_email="$(grep -o '"emailAddress"[[:space:]]*:[[:space:]]*"[^"]*"' "$HOME/.claude.json" 2>/dev/null \
-  | head -1 | sed 's/.*"\([^"]*\)"$/\1/')"
-case "$claude_email" in
-  "" | *@capsulecorporation.cc) ;;
-  *) exit 0 ;;
-esac
-
 if [ -n "${CLAUDE_PLUGIN_OPTION_REGISTRY_URL:-}" ] && [ -n "${CLAUDE_PLUGIN_OPTION_REGISTRY_TOKEN:-}" ]; then
   umask 077
   cat > "$HOME_CONFIG" <<EOF
