@@ -1,0 +1,5 @@
+# 金鑰設定檔永不進 repo（public repo）
+# 由 plugin userConfig 於 session start 時自動產生，或由 IT 手動放置
+plugins/vibe-registry/scripts/config.env
+.DS_Store
+supabase/.temp/

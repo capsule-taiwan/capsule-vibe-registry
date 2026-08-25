@@ -1,0 +1,53 @@
+---
+name: project-registry
+description: 公司 vibe coding 專案登記工作流。當使用者要開始開發一個新專案/新工具/新功能、詢問「有沒有人做過」、要更新專案進度、或宣告專案完成/暫停時使用。負責查重、登記、進度更新與收尾。
+---
+
+# Vibe Coding 專案登記工作流
+
+公司所有用 Claude 開發的專案都登記在中央登記表（Supabase）。每次 session 開始時，hook 會把進行中項目以 `<vibe-registry>` 區塊注入 context，其中也包含 `registry.sh` 的完整路徑——**優先使用該區塊裡的路徑**；若不在 context 中，用 `${CLAUDE_PLUGIN_ROOT}/scripts/registry.sh`。
+
+## 何時登記（add）
+
+使用者開始一個**新的開發專案**時：寫一個新工具、新網站、新自動化腳本、對某專案的大功能。
+**不要登記**：問問題、看程式碼、小修 bug、一次性的資料處理。判斷標準＝「這件事會跨多個 session、別人可能重工」。
+
+流程：
+1. **先跑 `registry.sh list --all` 拿即時全表**再查重（一定要含已完成：「有人做完了、直接沿用」是價值最高的查重命中；另外 context 裡的 `<vibe-registry>` 只是 session 開場的進行中快照，長 session 會過時）。有語意相似的項目（不只看字面，看描述），**先告知使用者**，並依情況處理：
+   - **已完成的類似專案** → 告知「某某做過 X、已完成」，建議先找對方拿成果沿用，確定要重做/延伸才登記
+   - **同一個進行中專案、一起做的** → 不要重複登記，改 `registry.sh join <id>` 加入成員
+   - **不同專案，只是像** → 照常 `add`
+   - **真的重工了** → 讓使用者決定：併入對方（join）或放棄
+2. 確定是新專案時執行：
+   ```bash
+   bash <路徑>/registry.sh add "專案名稱" "一句話描述（做什麼、給誰用）"
+   ```
+3. 把回傳的 `id` 記在心裡（本 session 收尾要用）。
+
+## 多人協作
+
+- `owner` 是發起人，`members` 是後來加入的協作者（用 `join` 記錄）；發起人和成員都可以 `update` / `status`。
+- 「是不是同一個專案」是語意判斷，由你比對描述後**問使用者確認**，不要自行斷定。
+
+## 何時更新（update）
+
+session 中對某個登記項目有**實質進度**（做出可用的東西、完成一個階段），在收尾時執行一次：
+
+```bash
+bash <路徑>/registry.sh update <id> "本次進度一句話"
+```
+
+一個 session 更新一次就好，不要每個小步驟都打。若不知道 id，先 `registry.sh list` 用 title + owner 對出來。
+
+## 何時收尾（status）
+
+- 使用者說做完了 / 上線了：`registry.sh status <id> done`
+- 使用者說先擱置：`registry.sh status <id> paused`
+- 之前 paused/stale 的項目重新開工：`registry.sh status <id> active`
+
+## 原則
+
+- 登記和更新**由你主動做**，做完用一句話告知使用者即可，不用每次徵求同意；但 `add` 前的查重結果一定要先讓使用者看到。
+- 使用者明確說「不要登記」就尊重，不再堅持。
+- 指令失敗（離線、API 掛掉）不要重試超過一次，告知使用者稍後再補登即可，不要阻塞正事。
+- 若錯誤訊息是「尚未設定登記表連線」，代表 plugin 還沒完成設定：引導使用者從 Slack #vibe-coding 置頂訊息取得 URL 與 token、問到公司 email 後，把三者寫入 `~/.claude/vibe-registry.env`（格式見 scripts 目錄的 `config.env.example`，寫完 chmod 600），再跑 `registry.sh list` 驗證。

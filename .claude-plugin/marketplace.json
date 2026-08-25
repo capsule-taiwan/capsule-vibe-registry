@@ -1,0 +1,14 @@
+{
+  "name": "capsule-vibe",
+  "owner": {
+    "name": "Capsule IT",
+    "email": "it-2@capsulecorporation.cc"
+  },
+  "plugins": [
+    {
+      "name": "vibe-registry",
+      "description": "公司 vibe coding 專案登記表：開工自動查重、登記、進度更新與 Slack 通知",
+      "source": "./plugins/vibe-registry"
+    }
+  ]
+}
