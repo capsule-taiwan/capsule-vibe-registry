@@ -54,4 +54,5 @@ bash <路徑>/registry.sh update <id> "本次進度一句話"
 - **`add` 一定先徵求同意**（含查重結果先讓使用者看到）；`update` / `status` 是「已同意登記的專案」的例行維護，由你主動做、做完一句話告知即可，不用再問。
 - 使用者說「不要登記」就尊重，不追問、不再提；若使用者說「以後都不要問」，提醒他可以直接停用 plugin（`/plugin` → disable）。
 - 指令失敗（離線、API 掛掉）不要重試超過一次，告知使用者稍後再補登即可，不要阻塞正事。
-- 若錯誤訊息是「尚未設定登記表連線」，代表 plugin 還沒完成設定：引導使用者從 Slack #vibe-coding 置頂訊息取得 URL 與 token、問到公司 email 後，把三者寫入 `~/.claude/vibe-registry.env`（格式見 scripts 目錄的 `config.env.example`，寫完 chmod 600），再跑 `registry.sh list` 驗證。
+- 若錯誤訊息是「尚未設定登記表連線」，代表 plugin 還沒完成設定：引導使用者從 Slack #vibe-coding 置頂訊息取得 token、**開口問到本人的公司 email** 後，把兩者寫入 `~/.claude/vibe-registry.env`（格式見 scripts 目錄的 `config.env.example`，寫完 chmod 600），再跑 `registry.sh list` 驗證。
+- **email 一定要問本人，禁止從檔案推斷**：全公司共用同一個 Claude 登入帳號（it-2@capsulecorporation.cc），`~/.claude.json` 裡的帳號信箱不是使用者本人；對方答 it-2@... 時要說明並改要個人信箱。

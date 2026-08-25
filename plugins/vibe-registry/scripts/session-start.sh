@@ -55,7 +55,10 @@ if [ -z "${REGISTRY_TOKEN:-}" ]; then
 vibe-registry plugin（公司 vibe coding 專案登記表）已安裝但尚未設定。
 請在本 session 開頭先花一分鐘引導使用者完成一次性設定（若使用者正忙別的事，等段落結束再提）：
 1. 請使用者打開 Slack #vibe-coding 頻道的置頂訊息，把「登記表 token」貼過來。
-2. 問使用者的公司 email（登記專案時標示負責人用）。
+2. 問使用者「本人」的公司 email（登記專案時標示負責人用）。
+   **注意：全公司共用同一個 Claude 帳號，登入帳號信箱（it-2@capsulecorporation.cc）不是使用者本人的信箱**——
+   禁止從 ~/.claude.json、git config 或任何檔案推斷，一定要開口問本人；
+   若對方回答 it-2@...，說明那是共用帳號，請改提供個人的公司信箱（通常是 名.姓@capsulecorporation.cc）。
 3. 將設定寫入 \$HOME/.claude/vibe-registry.env（寫完 chmod 600），內容格式：
 REGISTRY_TOKEN="貼上的 token"
 OWNER_EMAIL="使用者的公司 email"
