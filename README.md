@@ -107,6 +107,7 @@ Marketplace 支援自動更新（`/plugin` → Marketplaces → auto-update）�
 - **寫入路徑唯一**：所有讀寫走 Edge Function；`vibe_projects` 的 RLS 啟用且零政策，anon/authenticated 直連一律被拒。改函式邏輯後要重新 deploy 才生效。
 - **token 不驗身份**：拿到 token 的人可以用任何 email 自稱任何人（登記表信任模型）。要真身份需上 Supabase Auth，屬於未來升級。
 - **repo 是 public**：程式碼與機制公開（無實害），但**任何秘密都不可 commit**——config.env 已 gitignore，token/webhook 只存在 Supabase secrets 與 Slack 置頂，PR 審查時留意。
+- **只在公司 Claude 帳號下運作**：hook 會讀本機登入帳號的 email（`~/.claude.json`），非 `@capsulecorporation.cc` 網域（例如個人帳號）靜默不動作。這是行為範圍控制、非安全機制（讀不到 email 時放行，避免 Claude Code 改版後功能無聲消失）。
 - **登記靠 Claude 自覺**（skill 引導，非強制）：使用者堅持不登記擋不住。底線的「強制」需要 MDM 推 managed settings，目前沒有。實務上 SessionStart 注入 + skill 引導的完成率已遠高於「請大家自己去填表」。
 - **停滯偵測**：`registry.sql` 尾端有 pg_cron 選配，14 天沒更新自動標 `stale`，`/registry` 會標註。
 - **重工的另一半**：登記表只能提醒「有人在做」，看不到彼此的程式碼。有價值的產出還是要收編進正式 repo，那是下一階段的事。
